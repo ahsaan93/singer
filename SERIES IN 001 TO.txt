@@ -1,0 +1,35 @@
+DECLARE
+gl_cb_id_issue RETURN VARCHAR2 IS
+
+  MAX_ID number(4);
+  X VARCHAR2(30);
+  Y VARCHAR2(30);
+  I NUMBER(15):=0;
+  NUM varchar2(4);
+BEGIN
+
+  SELECT MAX(ROWNUM) INTO MAX_ID FROM GL_CB_HEADER;
+  IF MAX_ID IS NULL THEN
+    MAX_ID := 1;
+  END IF;
+    
+         
+  FOR I IN 1..MAX_ID
+    LOOP
+      BEGIN
+        IF MAX_ID > 0 AND MAX_ID <=9 THEN
+          NUM :=TO_CHAR('00'||i);  
+        ELSIF MAX_ID > 9 AND MAX_ID <=99 THEN
+          NUM := TO_CHAR('0'||i);
+        ELSIF MAX_ID > 99 THEN
+          NUM :=TO_CHAR(i);
+        END IF;
+              
+          SELECT gl_cb_id INTO X FROM GL_CB_HEADER WHERE gl_cb_id =  NUM;
+          EXCEPTION WHEN NO_DATA_FOUND THEN Y:= NUM; EXIT;  
+      END;
+    END LOOP;
+    
+    RETURN Y;
+  --DBMS_OUTPUT.PUT_LINE(Y);
+END;

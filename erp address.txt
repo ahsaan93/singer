@@ -1,0 +1,14 @@
+http://172.17.1.148:7777/forms/frmservlet/ERP/IT/MENUWEB
+
+
+login name : muhammad.ahsan
+password : Mughal007
+
+
+
+oradata/apps/frhome/
+
+oradata/source
+
+source & compile forms:
+u01/app/oracle/product/10.2.0/OracleAS_1/forms/ERP/GL

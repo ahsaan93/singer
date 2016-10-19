@@ -1,0 +1,11 @@
+user id : erpmain
+password : citi_bank2016
+
+database name : SIMS
+SERVICE NAME : PROD
+
+SERVER DATABASE IP : 172.17.1.20
+SERVER FORM ADDRESS : http://172.17.1.148:7777/forms/frmservlet/ERP/IT/MENUWEB
+
+
+UNIX BASED SERVED SINGER

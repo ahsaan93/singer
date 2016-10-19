@@ -1,0 +1,20 @@
+declare
+  counter number; 
+  i integer;
+BEGIN 
+  select count(:GL_CB_LINES.GL_CB_SR_NO) into counter from dual;
+  
+  IF counter = 0 THEN
+    :GL_CB_LINES.GL_CB_SR_NO := '001';
+  ELSE
+    for i in 1..counter loop
+      IF :GL_CB_LINES.GL_CB_SR_NO > 0 AND :GL_CB_LINES.GL_CB_SR_NO <=9 THEN
+        :GL_CB_LINES.GL_CB_SR_NO := '00'||i;  
+      ELSIF :GL_CB_LINES.GL_CB_SR_NO > 9 AND :GL_CB_LINES.GL_CB_SR_NO <=99 THEN
+        :GL_CB_LINES.GL_CB_SR_NO := '0'||i;
+      ELSIF :GL_CB_LINES.GL_CB_SR_NO > 99 THEN
+        :GL_CB_LINES.GL_CB_SR_NO := i;
+      END IF;
+    end loop;      
+   END IF;
+END;
