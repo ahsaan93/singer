@@ -1,0 +1,86 @@
+PROCEDURE action_proc(trans_id in varchar2, ac in varchar2, rmks in varchar2, s in varchar2) IS
+/*            
+  trans_id VARCHAR2(15):='CBP161001';
+  ac VARCHAR2(1):='F';
+  CC VARCHAR2(2):='01';
+  rmks VARCHAR2(250):='DEFAULT REMARKS';
+  s VARCHAR2(1):='O';
+  ISSUE_NOTIFICATION_ID VARCHAR2(20):='NI1610000001';*/
+
+  n_id varchar2(15);
+  v_menuid NUMBER:=:GLOBAL.p_menu_id;
+  transaction_id varchar2(15):=trans_id;
+  flow_track_id varchar2(15);
+  in_bound_user_id varchar2(15);
+  out_bound_user_id varchar2(15);
+  action varchar2(1):=ac;
+  action_date date := sysdate;
+  COM_ID VARCHAR2(2):=:GLOBAL.var_coid;
+  remarks varchar2(250):=rmks;
+  status varchar2(1):=s;
+  v_user_Id varchar2(3):=:GLOBAL.VAR_USER_ID;
+  
+  v_direction_after_approval VARCHAR2(1);
+  
+BEGIN
+
+  n_id := ISSUE_NOTIFICATION_ID;
+  v_menuid := v_menuid;
+	
+	BEGIN 
+    select H.FLOWTRACKID, DIRECTION_AFTER_APPROVAL  
+    INTO flow_track_id, v_direction_after_approval
+    FROM wf_flowtrackHEADER H
+    WHERE H.MENUID = v_menuid;
+
+   
+		   BEGIN 
+			    select L.INBOUNDFROMID, L.OUTBOUNDTOID
+			    INTO in_bound_user_id, out_bound_user_id
+			    FROM wf_flowtrackLINES L, wf_flowtrackHEADER H
+			    WHERE L.FLOWTRACKID = H.FLOWTRACKID
+			    AND H.MENUID = v_menuid--609---:GLOBAL.MENU_ID;
+			    AND L.INBOUNDFROMID = v_user_Id;---:GLOBAL.VAR_USER_ID;
+		   EXCEPTION
+			   	WHEN NO_DATA_FOUND THEN
+			   		BEGIN
+			        SELECT STRENGTHID, STRENGTHPARENTID 
+			        INTO in_bound_user_id, out_bound_user_id
+			        FROM WF_DEFAULT_HIRARCHI_VIEW
+			        WHERE USER_ID = v_user_Id;---:GLOBAL.VAR_USER_ID;
+			      EXCEPTION
+			        WHEN NO_DATA_FOUND THEN
+			          --DBMS_OUTPUT.PUT_LINE('IN BOUND USER IS NOT VALID');
+			          in_bound_user_id := v_user_Id;--:GLOBAL.VAR_USER_ID;
+			          out_bound_user_id := v_user_Id;--- :GLOBAL.VAR_USER_ID;
+			         	MESSAGE('IN BOUND USER IS NOT VALID');
+			       --  	MESSAGE('IN BOUND USER IS NOT VALID');
+			      END;
+			  END; 	
+		  EXCEPTION
+				WHEN NO_DATA_FOUND THEN
+					MESSAGE('Workflow not found');
+					MESSAGE('Workflow not found');
+					RAISE FORM_TRIGGER_FAILURE;			
+		--    WHEN NO_DATA_FOUND THEN
+
+		  END;  
+  IF in_bound_user_id IS NOT NULL AND out_bound_user_id IS NOT NULL THEN
+    
+    in_bound_user_id := BOUND_USER_ID(in_bound_user_id);
+    out_bound_user_id := BOUND_USER_ID(out_bound_user_id);
+    
+    IF action = 'A' AND v_direction_after_approval = 'S' THEN
+    	out_bound_user_id := NULL;	
+    ELSIF action = 'A' AND v_direction_after_approval = 'B' THEN
+    	out_bound_user_id := INITIATOR;	
+    ELSIF action = 'R' THEN
+    	out_bound_user_id := INITIATOR;
+    END IF;
+
+    INSERT INTO WF_NOTIFICATIONSUMMARY
+    VALUES(n_id, v_menuid, transaction_id, flow_track_id, in_bound_user_id, out_bound_user_id, action, action_date, COM_ID, remarks, status, v_user_Id);
+    COMMIT;
+    
+  END IF;
+END;
