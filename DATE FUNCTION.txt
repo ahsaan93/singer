@@ -1,0 +1,8 @@
+with t as (select to_date('02/16/1993','MM/DD/YYYY') as c_start_date, sysdate as c_end_date from dual 
+               )
+
+    select c_start_date, c_end_date
+          ,trunc(months_between(c_end_date, c_start_date) / 12) as yrs
+          ,trunc(mod(months_between(c_end_date, c_start_date), 12)) as mnths
+          ,trunc(c_end_date - add_months(c_start_date, trunc(months_between(c_end_date, c_start_date)))) as dys
+ from t
